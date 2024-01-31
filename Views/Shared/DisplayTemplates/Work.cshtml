@@ -1,0 +1,72 @@
+﻿@model Work
+
+
+<tr>
+	<td>
+		@Html.DisplayFor(m => m.CreateDates)
+	</td>
+	<td>
+		@Html.DisplayFor(m => m.Project)
+	</td>
+	<td>
+		@Html.DisplayFor(m => m.Name)
+	</td>
+	<td>
+		@Html.DisplayFor(m => m.DueDates)
+	</td>
+	<td>
+		@{
+			foreach (var a in ViewBag.Users as IEnumerable<AgileRap_Process.Models.User>)
+			{
+				if (Model.CreateBy == a.ID)
+				{
+					@Html.DisplayFor(m => a.Name)
+				}
+			}
+		}
+	</td>
+	<td>
+		@{
+			IEnumerable<Provider> ModelProviderList = Model.Provider.Where(s => s.IsDelete == false);
+			foreach (var i in ModelProviderList)
+			{
+				if (i == ModelProviderList.Last())
+				{
+					@Html.DisplayFor(m => i.User.Name)
+				}
+				else
+				{
+					@Html.DisplayFor(m => i.User.Name)
+					@Html.DisplayName(" , ")
+				}
+			}
+		}
+	</td>
+	<td>
+		@Html.DisplayFor(m => m.Status.StatusName)
+	</td>
+	<td>
+		@Html.DisplayFor(m => m.Remark)
+	</td>
+	<td>
+		@Html.ActionLink("History", "History", "Works", new { id = Model.ID },new { @class = "btn btn-secondary btn-sm" })
+		@Html.ActionLink("Edit", "Edit", "Works", new { id = Model.ID }, new { @class = "btn btn-secondary btn-sm" })
+	</td>
+	@* <td>
+		@Html.ActionLink("Close", "Index")<br />
+		@if (historyText != null)
+		{
+			@Html.DisplayName(historyText)
+		}
+		else
+		{
+			@foreach (var i in Model)
+			{
+				if (i.ID == historyID)
+				{
+					@Html.DisplayFor(m => i.WorkLog)
+				}
+			}
+		}
+	</td> *@
+</tr>

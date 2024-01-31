@@ -1,0 +1,108 @@
+﻿@model User
+@{
+	Layout = null;
+}
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"] - AgileRap_Process</title>
+	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/AgileRap_Process.styles.css" asp-append-version="true" />
+</head>
+<body>
+	<header>
+		<nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+			<div class="container-fluid">
+				<a class="navbar-brand" asp-area="" asp-controller="Works" asp-action="Index">AgileRap_Process</a>
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+						aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+			</div>
+		</nav>
+	</header>
+	<div class="container">
+		@using (Html.BeginForm("Register", "Users", FormMethod.Post, new { id = "userForm" }))
+		{
+
+			<div class="mt-1">
+				<h1>Register</h1>
+			</div>
+			<div>
+				<label asp-for="Email"></label>
+			</div>
+			<div class="mt-1">
+				<div class="row">
+					<div class="col-auto">
+						<input type="email" asp-for="Email" placeholder="example@example.com" required/>
+					</div>
+					<div class="col-auto">
+						@if (TempData["EmailX"] != null)
+						{
+							<p style="color:red;">@TempData["EmailX"]</p>
+						}
+					</div>
+				</div>
+			</div>
+			<div>
+				<label asp-for="Password"></label>
+			</div>
+			<div class="mt-1">
+				<div class="row">
+					<div class="col-auto">
+						<input type="Password" asp-for="Password" placeholder="Password" required />
+					</div>
+					<div class="col-auto">
+						@if (TempData["PasswordX"] != null)
+						{
+							<p style="color:red;">@TempData["PasswordX"]</p>
+						}
+					</div>
+				</div>
+			</div>
+			<div>
+				<label asp-for="ConfirmPassword"></label>
+			</div>
+			<div class="mt-1">
+				<div class="row">
+					<div class="col-auto">
+						<input asp-for="ConfirmPassword" type="Password" placeholder="Confirm Password" required />
+						<span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+					</div>
+					<div class="col-auto">
+						@if (TempData["PasswordNotmatch"] != null)
+						{
+							<p style="color:red;">@TempData["PasswordNotmatch"]</p>
+						}
+					</div>
+				</div>	
+			</div>
+			<div>
+				<label asp-for="Name"></label>
+			</div>
+			<div class="mt-1">
+				<input asp-for="Name" placeholder="Name" required />
+			</div>
+
+			<div class="row">
+				<div class="col-1">
+					@Html.ActionLink("Cancel", "Login", "Users", "", new { @class = "mt-2 btn btn-secondary btn-sm" })
+				</div>
+				<div class="col-auto">
+					<input class="mt-2 btn btn-secondary btn-sm" type="submit" value="Register" />
+				</div>
+
+			</div>
+
+
+			<div>
+				@if (ViewData["ValidateMessage"] != null)
+				{
+					<label>@ViewData["ValidateMessage"]</label>
+				}
+			</div>
+		}
+
+
+</body>

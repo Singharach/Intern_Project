@@ -1,0 +1,174 @@
+﻿@model Work
+
+@{
+    // Provider provider = new Provider();
+    Status status = new Status();
+    // List<SelectListItem> UserDropdownList = ViewBag.User;
+    List<SelectListItem> StatusDropdownList = ViewBag.Status;
+    var selectedi = ViewBag.Selected as Work;
+    var size = "";
+    var dis = "";
+}
+@Html.HiddenFor(m => m.ID)
+@Html.HiddenFor(m => m.IsDelete)
+@Html.HiddenFor(m => m.IsSelectAll)
+@Html.HiddenFor(m => m.StatusID, new { id="StatusID"} )
+@Html.HiddenFor(m => m.CreateDate)
+@Html.HiddenFor(m => m.UpdateDate)
+@Html.HiddenFor(m => m.CreateBy)
+@Html.HiddenFor(m => m.ProviderValue)
+<script>
+	﻿document.addEventListener("DOMContentLoaded",
+    () => {
+
+
+        $('#select-tops-options').multiselect({
+            buttonClass: 'form-select',
+            nonSelectedText: 'Select Provider',
+            buttonContainer: '<div class="" id="select-tops-options-container"></div>',
+            selectedClass: 'active multiselect-selected',
+            numberDisplayed: 5,
+            buttonWidth: '10em',
+            includeSelectAllOption: true,
+            onSelectAll: function (options) {
+                document.getElementById("work_IsSelectAll").value = true;
+            },
+            onDeselectAll: function (options) {
+                document.getElementById("work_IsSelectAll").value = false;
+            },
+            //includeResetOption: true,
+            //selectAllName: 'select-all-name',
+            onChange: function (option, checked) {
+                /*
+                 * Not there yet
+                 */
+                if (checked) {
+                    document.querySelectorAll(`[value="${$(option[0])[0].value}"]`)[1].ariaChecked = "true";
+                    document.querySelectorAll(`[value="${$(option[0])[0].value}"]`)[0].ariaChecked = "true";
+                } else {
+                    document.querySelectorAll(`[value="${$(option[0])[0].value}"]`)[1].ariaChecked = "false";
+                    document.querySelectorAll(`[value="${$(option[0])[0].value}"]`)[0].ariaChecked = "false";
+                }
+                
+                //$("#select-tops-options").multiselect('deselect', '1');
+                var toppings = $('#select-tops-options option:selected');
+
+                var selected = [];
+                $(toppings).each(function (index, item) {
+                    selected.push([$(this).val()]);
+                });
+
+                document.getElementById("work_ProviderValue").value = selected.join(',');
+            },
+            templates: {
+                button:
+                    '<button type="button" class="multiselect dropdown-toggle" ' +
+                    'data-bs-toggle="dropdown"><span class="multiselect-selected-text"></span></button>',
+                resetButton: '<div class="multiselect-reset text-center p-2"><button type="button" class="btn btn-sm btn-danger"></button></div>'
+            }
+        });
+
+    });
+
+    
+</script>
+
+<script>
+
+   function IsChangeDuedate() {
+       var dueDateValue = $("#DueDateID").val();
+
+       if (!dueDateValue) {
+           $("#ShowStatus").val(1);
+           $("#StatusID").val(1);
+       } else {
+           $("#ShowStatus").val(2);
+           $("#StatusID").val(2);
+       }
+   }
+
+</script>
+
+<div>
+    @Html.EditorFor(m => m.Provider)
+</div>
+
+<tr>
+		<td>
+			@Html.DisplayFor(m => m.CreateDates)
+		</td>
+		<td>
+			@Html.EditorFor(m => m.Project, new { HtmlAttributes = new {@class="form-control", width="500px", required = "required"}})
+		</td>
+		<td>
+			@Html.EditorFor(m => m.Name, new { HtmlAttributes = new {@class="form-control", width="125px", required = "required"}})
+		</td>
+		<td>
+			@Html.EditorFor(m => m.DueDate,new { htmlAttributes = new { @class = "form-control", onchange = "IsChangeDuedate()",id="DueDateID" } })
+		</td>
+		<td>
+			@{
+				foreach (var a in ViewBag.Users as IEnumerable<User>)
+				{
+					if (Model.CreateBy == a.ID)
+					{
+                                    @Html.DisplayFor(modelitem => a.Name)
+					}
+				}
+			}
+		</td>
+		<td>
+			<select id="select-tops-options" multiple="multiple" required>
+            @{
+                foreach (var user in ViewBag.Users as IEnumerable<User>)
+                {
+                    if (selectedi != null)
+                    {
+                      var isSelected = selectedi.Provider.Where(m => m.IsDelete == false).Any(workpro => workpro.UserID == user.ID);
+                                    <option value="@user.ID" selected = "@isSelected"> @user.Name</option>
+                    }
+                    else
+                    {
+                        <option value="@user.ID"> @user.Name</option>
+                    }
+                }
+            }
+        </select>
+        </td>
+        
+        <td>
+            @if (ViewBag.EditID != null)
+        {
+           @Html.DropDownListFor(m => m.StatusID, StatusDropdownList, new { id="ShowStatus"} )
+        }
+        else
+        {
+            @Html.DropDownListFor(m => m.StatusID, StatusDropdownList, new { id="ShowStatus", disabled = "disabled" } )
+        }      
+		</td>
+		<td>
+			@Html.EditorFor(m => m.Remark, new { HtmlAttributes = new {@class="form-control", width="125px"}})
+		</td>
+        @if(ViewBag.EditID != null)
+        {
+            size = "225px";
+        }
+        else
+        {
+            size = "150px";
+        }
+        <td width=@size>
+        @if (ViewBag.EditID != null)
+        {
+            @Html.ActionLink("History", "History", "Works", new { id = Model.ID },new { @class = "btn btn-secondary btn-sm" })
+            <input class="mt-1 mb-1 btn btn-primary btn-sm" type="submit" value="Submit" />
+            @Html.ActionLink("Cancel", "Index", "Works","",new {  @class = "btn btn-danger btn-sm" })
+        }
+        else
+        {
+                <input class="mb-0 btn btn-primary btn-sm" type="submit" value="Submit" /> 
+                @Html.ActionLink("Cancel", "Index", "Works","",new {  @class = "btn btn-danger btn-sm" })
+        }
+        
+		</td>
+</tr>

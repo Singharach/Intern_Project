@@ -1,0 +1,67 @@
+﻿@model User
+@{
+	Layout = null;
+}
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"] - AgileRap_Process</title>
+	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/AgileRap_Process.styles.css" asp-append-version="true" />
+</head>
+<body>
+	<header>
+		<nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+			<div class="container-fluid">
+				<a class="navbar-brand" asp-area="" asp-controller="Works" asp-action="Index">AgileRap_Process</a>
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+						aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+			</div>
+		</nav>
+	</header>
+	<div class="container">
+		@using (Html.BeginForm("Login", "Users", FormMethod.Post, new { id = "userForm" }))
+		{
+			<div>
+				<h1>Login</h1>
+			</div>
+			<div>
+				<label asp-for="Email"></label>
+			</div>
+			<div>
+				<input type="email" asp-for="Email" placeholder="Email" />
+			</div>
+			<div>
+				<label asp-for="Password"></label>
+			</div>
+			<div class="mt-1">
+				<input type="Password" asp-for="Password" placeholder="Password" />
+			</div>
+			@* <div class="row mt-1">
+		<div class="col-sm-auto">
+		@Html.CheckBoxFor(m => m.KeepLogin) Remember Me
+		</div>
+		</div> *@
+
+			@if (ViewData["ValidateMessage"] != null)
+			{
+				<label style="color:red;">@ViewData["ValidateMessage"]</label>
+			}<br />
+			<div class="row">
+				<div class="col-1">
+					@Html.ActionLink("Register", "Register", "Users")
+				</div>
+				<div class="col-1">
+					<input class="mt-1 btn btn-secondary btn-sm" type="submit" value="Login" />
+				</div>
+			</div>
+
+
+		}
+
+	</div>
+
+</body>

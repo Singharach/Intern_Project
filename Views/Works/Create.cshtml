@@ -1,0 +1,115 @@
+﻿@model IEnumerable<AgileRap_Process.Models.Work>
+
+@{
+	ViewData["Title"] = "Create";
+
+}
+
+<h1>สร้างรายการงาน</h1>
+
+
+<style>
+	td, th {
+		border: 1px solid #000000 
+	}
+</style>
+@using (Html.BeginForm("Create", "Works", FormMethod.Post, new { id = "workForm" }))
+{
+	<table class="table" width="1600px">
+		<thead class="align-top">
+			<tr>
+				<th>
+					@Html.DisplayNameFor(model => model.CreateDate)
+				</th>
+				<th>
+					@Html.DisplayNameFor(model => model.Project)
+				</th>
+				<th>
+					@Html.DisplayNameFor(model => model.Name)
+				</th>
+				<th>
+					@Html.DisplayNameFor(model => model.DueDate)
+				</th>
+				<th>
+					@Html.DisplayName("Assign By/ Requester")
+				</th>
+				<th colspan="1">
+					@Html.DisplayName("Assign By/ Provider")
+				</th>
+				<th>
+					@Html.DisplayNameFor(model => model.Status)
+				</th>
+				<th>
+					@Html.DisplayNameFor(model => model.Remark)
+				</th>
+				<th>Manage</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var work in Model)
+			{
+				if (work == Model.Last())
+				{
+
+					@Html.EditorFor(m => work)
+
+				}
+				else
+				{
+					<tr>
+						<td>
+							@Html.DisplayFor(modelitem => work.CreateDates)
+						</td>
+						<td>
+							@Html.DisplayFor(modelitem => work.Project)
+						</td>
+						<td>
+							@Html.DisplayFor(modelitem => work.Name)
+						</td>
+						<td>
+							@Html.DisplayFor(modelitem => work.DueDates)
+						</td>
+						<td colspan ="">
+							@{
+								foreach (var a in ViewBag.Users as IEnumerable<User>)
+								{
+									if (work.CreateBy == a.ID)
+									{
+										@Html.DisplayFor(modelitem => a.Name)
+									}
+								}
+							}
+						</td>
+						<td>
+							@{
+								IEnumerable<Provider> providers = work.Provider.Where(s => s.IsDelete == false);
+								foreach (var i in providers)
+								{
+									if (i == providers.Last())
+									{
+										@Html.DisplayFor(modelItem => i.User.Name)
+									}
+									else
+									{
+										@Html.DisplayFor(modelItem => i.User.Name)
+										@Html.DisplayName(" , ")
+									}
+								}
+							}
+						</td>
+						<td>
+							@Html.DisplayFor(modelitem => work.Status.StatusName)
+						</td>
+						<td>
+							@Html.DisplayFor(modelitem => work.Remark)
+						</td>
+						<td>
+							@Html.ActionLink("History", "History", "Works", new { id = work.ID }, new { @class = "btn btn-secondary btn-sm" })
+							@Html.ActionLink("Edit", "Edit", "Works", new { id = work.ID }, new { @class = "btn btn-secondary btn-sm" })
+						</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+}

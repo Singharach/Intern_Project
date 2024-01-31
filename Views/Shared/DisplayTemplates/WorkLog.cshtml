@@ -1,0 +1,107 @@
+﻿@model WorkLog
+
+
+@if (Model.WorkLogChangeNext != null)
+{
+
+	<tr>
+		<td>
+			@Html.DisplayFor(m => m.No)
+		</td>
+		<td>
+			@Html.DisplayName("UpdateBy: ")
+			@foreach (var a in ViewBag.Users as IEnumerable<AgileRap_Process.Models.User>)
+			{
+				if (Model.WorkLogChangeNext.UpdateBy == a.ID)
+				{
+					@Html.DisplayFor(m => a.Name)
+				}
+			}
+			<br />
+			@Html.DisplayName("UpdateDate: ")
+			@Html.DisplayFor(m => m.UpdateDate)
+			<br />
+			@if (Model.Project != Model.WorkLogChangeNext.Project)
+			{
+				@Html.DisplayName("Project: ")
+				@Html.DisplayFor(m => m.Project)
+				@Html.DisplayName(" -> ")
+				@Html.DisplayFor(m => m.WorkLogChangeNext.Project)
+
+				<br />
+			}
+			@if (Model.Name != Model.WorkLogChangeNext.Name)
+			{
+				@Html.DisplayName("Name: ")
+				@Html.DisplayFor(m => m.Name)
+				@Html.DisplayName(" -> ")
+				@Html.DisplayFor(m => m.WorkLogChangeNext.Name)
+
+				<br />
+			}
+			@if (Model.DueDate != Model.WorkLogChangeNext.DueDate)
+			{
+				@Html.DisplayName("DueDate: ")
+				@Html.DisplayFor(m => m.DueDate)
+				@Html.DisplayName(" -> ")
+				@Html.DisplayFor(m => m.WorkLogChangeNext.DueDate)
+
+				<br />
+			}
+			@if (Model.StatusID != Model.WorkLogChangeNext.StatusID)
+			{
+				@Html.DisplayName("Status: ")
+				@Html.DisplayFor(m => m.Status.StatusName)
+				@Html.DisplayName(" -> ")
+				@Html.DisplayFor(m => m.WorkLogChangeNext.Status.StatusName)
+
+				<br />
+			}
+			@{
+				@if (Model.ProviderLog.Where(s => s.IsDelete == false).Count()
+					!= Model.WorkLogChangeNext.ProviderLog.Where(s => s.IsDelete == false).Count())
+				{
+					@Html.DisplayName("Provider: ")
+					string oldUser = "";
+					string newUser = "";
+					foreach (var i in Model.ProviderLog.Where(s => s.IsDelete == false))
+					{
+						if (i == Model.ProviderLog.Last())
+						{
+							oldUser += i.User.Name;
+						}
+						else
+						{
+							oldUser += i.User.Name + ",";
+						}
+					}
+					foreach (var i in Model.WorkLogChangeNext.ProviderLog.Where(s => s.IsDelete == false))
+					{
+						if (i == Model.WorkLogChangeNext.ProviderLog.Last())
+						{
+							newUser += i.User.Name;
+						}
+						else
+						{
+							newUser += i.User.Name + ",";
+						}
+					}
+					@Html.DisplayName(oldUser + " -> " + newUser)
+
+					<br />
+				}
+			}
+			@if (Model.Remark != Model.WorkLogChangeNext.Remark)
+			{
+				@Html.DisplayName("Remark: ")
+				@Html.DisplayFor(m => m.Remark)
+				@Html.DisplayName(" -> ")
+				@Html.DisplayFor(m => m.WorkLogChangeNext.Remark)
+
+				<br />
+			}
+		</td>
+	</tr>
+	<div>
+	</div>
+}
