@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AgileRap_Process.Data;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.DotNet.Scaffolding.Shared;
 using System.Diagnostics.Eventing.Reader;
 
 namespace AgileRap_Process.Models
@@ -9,6 +11,26 @@ namespace AgileRap_Process.Models
     [ModelMetadataType(typeof(ProviderMetadata))]
     public partial class Provider
     {
+        public void InsertCreate(AgileRap_ProcessContext dbContext, Work work, int i)
+        {
+            if (this.UserID == 0)
+            {
+                this.WorkID = work.ID;
+                this.UserID = i;
+                this.IsDelete = false;
+            }
+            dbContext.Provider.Add(this);
+        }
+        public void InsertEdit(AgileRap_ProcessContext dbContext, int i)
+        {
+
+            this.CreateDate = DateTime.Now;
+            this.UpdateDate = DateTime.Now;
+            this.IsDelete = false;
+            this.UserID = i;
+            dbContext.Provider.Add(this);
+            
+        }
         public bool IsEqual(Provider providerCompare)
         {
             var originalProperties = this.GetType().GetProperties();

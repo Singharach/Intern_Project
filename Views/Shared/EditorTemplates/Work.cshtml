@@ -3,6 +3,7 @@
 @{
     // Provider provider = new Provider();
     Status status = new Status();
+    var create = ViewBag.Create;
     // List<SelectListItem> UserDropdownList = ViewBag.User;
     List<SelectListItem> StatusDropdownList = ViewBag.Status;
     var selectedi = ViewBag.Selected as Work;
@@ -12,7 +13,6 @@
 @Html.HiddenFor(m => m.ID)
 @Html.HiddenFor(m => m.IsDelete)
 @Html.HiddenFor(m => m.IsSelectAll)
-@Html.HiddenFor(m => m.StatusID, new { id="StatusID"} )
 @Html.HiddenFor(m => m.CreateDate)
 @Html.HiddenFor(m => m.UpdateDate)
 @Html.HiddenFor(m => m.CreateBy)
@@ -73,21 +73,24 @@
     
 </script>
 
+@if (create == true)
+{
 <script>
-
+    
    function IsChangeDuedate() {
        var dueDateValue = $("#DueDateID").val();
 
-       if (!dueDateValue) {
+        if (!dueDateValue) {
            $("#ShowStatus").val(1);
            $("#StatusID").val(1);
-       } else {
+        } else {
            $("#ShowStatus").val(2);
            $("#StatusID").val(2);
-       }
+        }    
    }
 
 </script>
+}
 
 <div>
     @Html.EditorFor(m => m.Provider)
@@ -112,7 +115,7 @@
 				{
 					if (Model.CreateBy == a.ID)
 					{
-                                    @Html.DisplayFor(modelitem => a.Name)
+                                        @Html.DisplayFor(modelitem => a.Name)
 					}
 				}
 			}
@@ -125,11 +128,11 @@
                     if (selectedi != null)
                     {
                       var isSelected = selectedi.Provider.Where(m => m.IsDelete == false).Any(workpro => workpro.UserID == user.ID);
-                                    <option value="@user.ID" selected = "@isSelected"> @user.Name</option>
+                                        <option value="@user.ID" selected = "@isSelected"> @user.Name</option>
                     }
                     else
                     {
-                        <option value="@user.ID"> @user.Name</option>
+                            <option value="@user.ID"> @user.Name</option>
                     }
                 }
             }
@@ -143,6 +146,7 @@
         }
         else
         {
+            @Html.HiddenFor(m => m.StatusID, new { id="StatusID"} )
             @Html.DropDownListFor(m => m.StatusID, StatusDropdownList, new { id="ShowStatus", disabled = "disabled" } )
         }      
 		</td>

@@ -138,36 +138,5 @@
 			</tfoot>
 		</table>
 	</div>
-	<div class="col-sm-3">
-		@Html.ActionLink("Close", "Index")<br />
-		@if (historyText != null)
-		{
-			@Html.DisplayName(historyText)
-		}
-		else
-		{
-			<table>
-				<thead>
-					<tr>
-						<th>
-							@Html.DisplayName("No")
-						</th>
-						<th>
-							@Html.DisplayName("Description")
-						</th>
-					</tr>
-				</thead>
-				<tbody>
-					@foreach (var i in Model)
-					{
-						if (i.ID == historyID)
-						{
-							@Html.DisplayFor(m => i.WorkLog)
-						}
-					}
-				</tbody>
-			</table>
 
-		}
-	</div>
 </div>

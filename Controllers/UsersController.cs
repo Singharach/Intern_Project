@@ -25,8 +25,9 @@ namespace AgileRap_Process.Controllers
 		[HttpPost]
 		public async Task<IActionResult> Login(User user)
 		{
-			var inUser = db.User.Where(x => x.Email == user.Email && x.Password == user.Password).FirstOrDefault();
-			if (inUser != null)
+			var inUser = db.User.Where(x => x.Email == user.Email).FirstOrDefault();
+			bool verifyPass = BCrypt.Net.BCrypt.EnhancedVerify(user.Password, inUser.Password); 
+			if (inUser != null && verifyPass)
 			{
 				HttpContext.Session.SetString("UserSession", user.Email);
 				List<Claim> claims = new List<Claim>()
@@ -61,12 +62,7 @@ namespace AgileRap_Process.Controllers
 		public async Task<IActionResult> Register(User user)
 		{
 			var invalideEmail = db.User.Where(x => x.Email.Contains(user.Email)).FirstOrDefault();
-			if (user.Email == null || user.Password == null)
-			{
-                TempData["EmailX"] = "Please enter your email address.";
-                TempData["PasswordX"] = "Please enter your password.";
-                return RedirectToAction("Register");
-            }
+			
 			if (user.Password != user.ConfirmPassword)
 			{
 				TempData["PasswordNotmatch"] = "Password not match";
@@ -74,6 +70,8 @@ namespace AgileRap_Process.Controllers
 			}
 			if (invalideEmail == null)
 			{
+				string hashPassword = BCrypt.Net.BCrypt.EnhancedHashPassword(user.Password);
+				user.Password = hashPassword;
 				user.IsDelete = false;
 				db.User.Add(user);
 				db.SaveChanges();

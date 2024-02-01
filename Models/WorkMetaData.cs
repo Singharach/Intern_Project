@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
+using AgileRap_Process.Data;
 
 namespace AgileRap_Process.Models
 {
@@ -19,6 +20,14 @@ namespace AgileRap_Process.Models
 	[ModelMetadataType(typeof(WorkMetaData))]
 	public partial class Work
 	{
+		public void InsertCreate(AgileRap_ProcessContext dbContext, User users)
+		{
+			this.CreateBy = users.ID;
+			this.UpdateBy = users.ID;
+			this.CreateDate = DateTime.Now;
+			this.UpdateDate = DateTime.Now;
+			this.IsDelete = false;
+		}
 		[NotMapped]
 		public string? ProviderValue { get; set; }
 		[NotMapped]

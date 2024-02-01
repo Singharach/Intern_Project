@@ -8,16 +8,22 @@ using Microsoft.DotNet.Scaffolding.Shared;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using AgileRap_Process.Other;
 
 namespace AgileRap_Process.Controllers
 {
     [Authorize]
     public class WorksController : Controller
     {
-        private static List<SelectListItem> _UserList = new List<SelectListItem>();
+		#region VariableField
+		private static List<SelectListItem> _UserList = new List<SelectListItem>();
         private static List<SelectListItem> _StatusList = new List<SelectListItem>();
+        private static List<string> email = new List<string>();
         private AgileRap_ProcessContext db = new AgileRap_ProcessContext();
-        public ActionResult Index()
+		#endregion
+
+		#region ActionField
+		public ActionResult Index()
         {
             var work = db.Work.Where(m => m.IsDelete == false).Include(x => x.Status).
                 Include(l => l.Provider).ThenInclude(x => x.User).ToList();
@@ -40,6 +46,7 @@ namespace AgileRap_Process.Controllers
             var workDBList = db.Work.Where(m => m.IsDelete == false).Include(x => x.Status).
                 Include(l => l.Provider).ThenInclude(x => x.User).ToList();
 			DropDown();
+
 			if (work.WorkLog.Count < 2)
             {
                 ViewBag.HistoryText = "Project " + work.Project + " has no changed";
@@ -62,14 +69,15 @@ namespace AgileRap_Process.Controllers
         {
 			var standInUser = HttpContext.Session.GetString("UserSession").ToString();
 			var users = db.User.Where(x => x.Email.Contains(standInUser)).FirstOrDefault();
+
 			List<Work> worklist = db.Work.Include(x => x.Status).Include(l => l.Provider).ToList();
             Work work = new Work();
             work.CreateDate = DateTime.Now;
             work.CreateBy = users.ID;
             worklist.Add(work);
 
+            ViewBag.Create = true;
 			DropDown();
-
 
             return View(worklist);
         }
@@ -79,70 +87,54 @@ namespace AgileRap_Process.Controllers
         {
 			var standInUser = HttpContext.Session.GetString("UserSession").ToString();
 			var users = db.User.Where(x => x.Email.Contains(standInUser)).FirstOrDefault();
-            work.CreateBy = users.ID;
-            work.UpdateBy = users.ID;
-			work.CreateDate = DateTime.Now;
-            work.UpdateDate = DateTime.Now;
-            work.IsDelete = false;
+            var header = "Send Test Header";
+            var body = "Send Test Body";
+
+            work.InsertCreate(db, users);
             db.Work.Add(work);
+
             var user = db.User.ToList();
             work.Provider = new List<Provider>();
-            if (work.IsSelectAll == true)
+            if (work.IsSelectAll == true)//เก็บ Provider จากการกดเลือกทั้งหมด
             {
                 foreach (var f in user)
                 {
+                    email.Add(f.Email);
                     Provider provider = new Provider();
-                    if (provider.UserID == 0)
-                    {
-                        provider.WorkID = work.ID;
-                        provider.UserID = f.ID;
-                        provider.IsDelete = false;
-                    }
-                    db.Provider.Add(provider);
+                    provider.InsertCreate(db,work,f.ID);
                     work.Provider.Add(provider);
                 }
             }
-            else
-            {
-                if (work.ProviderValue == null)
-                {
-                    return Create();
-                }
+			else //เก็บ Provider จากการกดเลือกบ้างตัว
+			{
                 int[] listprovider = Array.ConvertAll(work.ProviderValue.Split(','), int.Parse);
                 foreach (var i in listprovider)
                 {
-                    Provider provider = new Provider();
-                    if (provider.UserID == 0)
+                    foreach (var e in user)
                     {
-                        provider.WorkID = work.ID;
-                        provider.UserID = i;
-                        provider.IsDelete = false;
+                        if (e.ID == i)
+                        {
+                            email.Add(e.Email);
+                        }
                     }
-                    db.Provider.Add(provider);
+                    Provider provider = new Provider();
+                    provider.InsertCreate(db, work, i);
                     work.Provider.Add(provider);
                 }
             }
-            WorkLog workLog = new WorkLog()
-            {
-                No = 1,
-                Project = work.Project,
-                Name = work.Name,
-                DueDate = work.DueDate,
-                StatusID = work.StatusID,
-                Remark = work.Remark,
-                CreateBy = work.CreateBy,
-                UpdateBy = work.UpdateBy,
-                CreateDate = DateTime.Now,
-                UpdateDate = DateTime.Now,
-                IsDelete = false
-            };
+
+            SendMail(email,header,body);//ส่งเมลล์
+            // บันทึก WorkLog
+            WorkLog workLog = new WorkLog();
+            workLog.InsertCreate(db, work);
+
             workLog.ProviderLog = new List<ProviderLog>();
             work.WorkLog = new List<WorkLog>()
             {
                 workLog
             };
-            foreach (var i in work.Provider)
-            {
+            foreach (var i in work.Provider)// บันทึก ProviderLog
+			{
                 ProviderLog providerLog = new ProviderLog()
                 {
                     UserID = i.UserID,
@@ -167,7 +159,6 @@ namespace AgileRap_Process.Controllers
             ViewBag.EditID = id;
             DropDown();
 
-
             return View(worklist);
         }
 
@@ -177,14 +168,16 @@ namespace AgileRap_Process.Controllers
 			var standInUser = HttpContext.Session.GetString("UserSession").ToString();
 			var users = db.User.Where(x => x.Email.Contains(standInUser)).FirstOrDefault();
 			bool hasModifyProvider = false;
+
             if (work.ProviderValue != null || work.IsSelectAll)
             {
                 hasModifyProvider = true;
             }
+
             if (hasModifyProvider)
             {
-                if (work.IsSelectAll)
-                {
+                if (work.IsSelectAll)//เพิ่ม Provider จากการกดเลือกทั้งหมด
+				{
                     work.ProviderValue = "";
                     var userDBList = db.User.ToList();
                     foreach (var j in userDBList)
@@ -199,15 +192,15 @@ namespace AgileRap_Process.Controllers
                         }
                     }
                 }
-                List<string> providerIDList = work.ProviderValue.Split(',').ToList();
-                foreach (var j in work.Provider)
+
+                List<string> providerIDList = work.ProviderValue.Split(',').ToList();//เพิ่ม Provider จากการกดเลือกบ้างตัว
+				foreach (var j in work.Provider)
                 {
                     bool isExist = false;
                     foreach (var i in providerIDList)
                     {
                         if (j.UserID == Convert.ToInt32(i))
                         {
-
                             isExist = true;
                             if (j.IsDelete == true)
                             {
@@ -217,7 +210,6 @@ namespace AgileRap_Process.Controllers
                             }
                             providerIDList.Remove(i);
                             break;
-
                         }
                     }
 
@@ -229,24 +221,18 @@ namespace AgileRap_Process.Controllers
                     }
                 }
 
-                if (providerIDList.Count > 0)
+                if (providerIDList.Count > 0)//ตรวจจำนวน Provider ที่เหลือใน List
                 {
                     foreach (var i in providerIDList)
                     {
                         var j = Convert.ToInt32(i);
-                        Provider provider = new Provider()
-                        {
-                            CreateDate = DateTime.Now,
-                            UpdateDate = DateTime.Now,
-                            IsDelete = false,
-                            UserID = j
-                        };
-                        db.Provider.Add(provider);
+                        Provider provider = new Provider();
+                        provider.InsertEdit(db,j);
                         work.Provider.Add(provider);
                     }
                 }
             }
-            else
+            else//เช็คข้อมูลเก่า
             {
                 Work oldWork = db.Work.Find(work.ID);
                 if (work.IsEqual(oldWork, true))
@@ -258,25 +244,12 @@ namespace AgileRap_Process.Controllers
 			work.UpdateBy = users.ID;
 			db.Entry(work).State = EntityState.Modified;
             work.UpdateDate = DateTime.Now;
-
-
+            //เก็บ WorkLog ในส่วนที่แก้ไข
             var workLogDBList = db.WorkLog.Where(s => s.WorkID == work.ID).Include(s => s.ProviderLog).ToList();
-            WorkLog workLog = new WorkLog()
-            {
-                WorkID = work.ID,
-                Project = work.Project,
-                Name = work.Name,
-                No = workLogDBList.Last().No + 1,
-                DueDate = work.DueDate,
-                StatusID = work.StatusID,
-                Remark = work.Remark,
-                CreateBy = work.CreateBy,
-                UpdateBy = work.UpdateBy,
-                CreateDate = DateTime.Now,
-                UpdateDate = DateTime.Now,
-                IsDelete = work.IsDelete
-            };
-            workLog.ProviderLog = new List<ProviderLog>();
+            WorkLog workLog = new WorkLog();
+            workLog.InsertEdit(db, work, workLogDBList);
+			//เก็บ ProviderLog ในส่วนที่แก้ไข
+			workLog.ProviderLog = new List<ProviderLog>();
             if (work.Provider != null)
             {
                 foreach (var i in work.Provider)
@@ -313,8 +286,10 @@ namespace AgileRap_Process.Controllers
             db.SaveChanges();
             return RedirectToAction("Index");
         }
-        
-        private WorkLog GetWorkLogNextByIndex(int index, Work workForLog)
+		#endregion
+
+		#region VoidField
+		private WorkLog GetWorkLogNextByIndex(int index, Work workForLog)
         {
             WorkLog tempWorkLogNext = new WorkLog()
             {
@@ -331,16 +306,6 @@ namespace AgileRap_Process.Controllers
         }
         private void DropDown()
         {
-            //List<User> selectuser = db.User.ToList();
-            //if (_UserList.Count != selectuser.Count)
-            //{
-            //    _UserList.Clear();
-            //    foreach (var i in selectuser)
-            //    {
-            //        SelectListItem selectListItem = new SelectListItem() { Text = i.Name, Value = i.ID.ToString() };
-            //        _UserList.Add(selectListItem);
-            //    }
-            //}
             ViewBag.Users = db.User.ToList();
 
             List<Status> selectstatus = db.Status.ToList();
@@ -355,5 +320,12 @@ namespace AgileRap_Process.Controllers
             }
             ViewBag.Status = _StatusList;
         }
-    }
+        private void SendMail(List <string> emailReciver,string header,string body)
+        {
+            var emailSender = new EmailSender(HttpContext.RequestServices.GetService<EmailConfiguration>());
+            var message = new Message(emailReciver, header, body );
+            emailSender.SendEmail(message);
+        }
+		#endregion
+	}
 }
